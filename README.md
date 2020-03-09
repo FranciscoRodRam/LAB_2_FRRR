@@ -3,10 +3,10 @@ Laboratorio 2 - de la materia Microestructuras y Sistemas de Trading: Análisis 
 
 ### Estructura General del Proyecto: 
 
-  visualizaciones.py:Visualización de datos. 
-  datos.py: Datos generales del proyecto.
-  funciones.py: Funciones para procesamiento de datos. 
-  principal.py: Ejecución del proyecto.
+  * visualizaciones.py:Visualización de datos. 
+  * datos.py: Datos generales del proyecto.
+  * funciones.py: Funciones para procesamiento de datos. 
+  * principal.py: Ejecución del proyecto.
   
 ### Archivos: 
   Documentos necesarios para el poryecto. 
