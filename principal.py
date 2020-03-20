@@ -8,3 +8,4 @@
 import funciones as fn
 
 df_data = fn.f_leer_archivo(param_archivo='archivo_tradeview_1.xlsx')
+
