@@ -10,7 +10,9 @@ import funciones as fn
 df_data = fn.f_leer_archivo(param_archivo='archivo_tradeview_1.xlsx')
 
 fn.f_pip_size(param_ins='cornusd')
-datos = fn.f_columnas_tiempos(param_data=df_data)
-datos = fn.f_columnas_pips(datos)
+df_data = fn.f_columnas_tiempos(param_data=df_data)
+df_data = fn.f_columnas_pips(df_data)
 
-df_tabla_1=fn.f_estadisticas_ba(param_data=datos)
+df_1_tabla=fn.f_estadisticas_ba(param_data=df_data)
+        
+df_1_ranking=fn.f_estadistica_ba2(param_data=df_data)

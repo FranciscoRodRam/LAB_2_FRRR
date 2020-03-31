@@ -116,7 +116,7 @@ def f_columnas_pips(param_data):
             param_data['pips'][i] = pipsc
         else:
             param_data['pips'][i] = pipsv
-            
+    #Profit Acumulado
     for i in range(1,len(param_data['order'])):
         acumulador=param_data.pips_acm[i-1]+param_data.pips[i]
         acumulador2=param_data.profit_acm[i-1]+param_data.profit[i]
@@ -126,9 +126,9 @@ def f_columnas_pips(param_data):
 
 
 
-# -- ------------------------------------------------------ FUNCION: Calcular pips -- #
+# -- ------------------------------------------------------ FUNCION: Estadisitica Básica -- #
 # -- ------------------------------------------------------------------------------------ -- #
-# --  Agregar con el cáluclo de pips
+# --  Data Frame con Valores estadísticos.
 
 def f_estadisticas_ba(param_data):
     """
@@ -152,17 +152,11 @@ def f_estadisticas_ba(param_data):
           'Ganadoras Compras/Operaciones Totales', 'Ganadoras Ventas/Operaciones Totales']
          }
     #DataFrame vacío. 
-    df_tabla_1 = pd.DataFrame(diccionario)
+    df_1_tabla = pd.DataFrame(diccionario)
     #Operaciones totales
-    df_tabla_1['valor'][0]=len(param_data['type'])
+    df_1_tabla['valor'][0]=len(param_data['type'])
     #Ganadoras
-    df_tabla_1['valor'][1] = param_data['profit'].gt(0).sum()
-    #Perdedoras
-    df_tabla_1['valor'][4] = df_tabla_1['valor'][0] - df_tabla_1['valor'][1]
-    #Media Profit
-    df_tabla_1['valor'][7] = param_data.profit.median()
-    #Media Pips
-    df_tabla_1['valor'][8] = param_data.pips.median()
+    df_1_tabla['valor'][1] = param_data['profit'].gt(0).sum()
     
     w,x,y,z = 0,0,0,0
     
@@ -180,20 +174,81 @@ def f_estadisticas_ba(param_data):
         if param_data['type'][i] == 'sell' and param_data['profit'][i] < 0 :
             z = z+1
     #asignando los valores anteriormente calculados misma secuencia.
-    df_tabla_1['valor'][2] = w
-    df_tabla_1['valor'][3] = x
-    df_tabla_1['valor'][5] = y
-    df_tabla_1['valor'][6] = z 
+    df_1_tabla['valor'][2] = w
+    df_1_tabla['valor'][3] = x
+    #Perdedoras
+    df_1_tabla['valor'][4] = df_1_tabla['valor'][0] - df_1_tabla['valor'][1]
+    df_1_tabla['valor'][5] = y
+    df_1_tabla['valor'][6] = z 
     
+     #Media Profit
+    df_1_tabla['valor'][7] = param_data.profit.median()
+    #Media Pips
+    df_1_tabla['valor'][8] = param_data.pips.median()
     #r_efectividad
-    df_tabla_1['valor'][9] = df_tabla_1['valor'][0] / df_tabla_1['valor'][1]
+    df_1_tabla['valor'][9] = round((df_1_tabla['valor'][1]/ df_1_tabla['valor'][0]),2)
     #r_proporcion
-    df_tabla_1['valor'][10] = df_tabla_1['valor'][1] / df_tabla_1['valor'][4]
+    df_1_tabla['valor'][10] = round(df_1_tabla['valor'][1]/ df_1_tabla['valor'][4],2)
     #r_efectividad_c
-    df_tabla_1['valor'][11] = df_tabla_1['valor'][0] / df_tabla_1['valor'][2] 
+    df_1_tabla['valor'][11] = round(df_1_tabla['valor'][2]/ df_1_tabla['valor'][0],2)
     #r_efectivdad_v
-    df_tabla_1['valor'][12] = df_tabla_1['valor'][0] / df_tabla_1['valor'][3] 
+    df_1_tabla['valor'][12] = round( df_1_tabla['valor'][3]/df_1_tabla['valor'][0],2) 
     
     
-    return df_tabla_1
+    return df_1_tabla
+
+
+# -- ------------------------------------------------------ FUNCION: Ranking -- #
+# -- ------------------------------------------------------------------------------------ -- #
+# --  Data Frame del ranking  con ratio de efectividad
+
+def f_estadistica_ba2(param_data):
+    """
+    Parameters
+    ----------
+    param_data : 'archivo_tradeview_1.xlsx'
+    Returns
+    -------
+    datos
+    Debugging
+    ---------
+    """
+    #Archivo para obtener el ranking
+    #param_data='archivo_tradeview_1.xlsx'
+    
+    #Simbolos utilizados en los diferentes archivos
+    simbolos = ['xauusd','eurusd', 'xaueur','bcousd','cornusd','mbtcusd','wticousd', 'spx500usd',
+                 'audusd', 'gbpusd','xaueur', 'nas100usd','usdmxn', 'eurjpy','gbpjpy', 'usdjpy',
+                 'btcusd','eurgbp', 'usdcad']
+    
+    diccionario = {'simbolo':np.zeros(len(simbolos)),
+                   'rank':np.zeros(len(simbolos))}
+    #DataFrame vacío. 
+    df_1_ranking = pd.DataFrame(diccionario)
+    
+    #Ciclo para crear ranking utilizando filtros
+    for i in range(len(df_1_ranking)):
+        filtro0 = param_data['symbol']==simbolos[i]
+        filtro1 = param_data[filtro0]
+        if filtro1.empty == False:
+            filtro1 = param_data[filtro0]
+            filtro2 = param_data[(param_data['symbol']==simbolos[i]) & (param_data['profit']>=0)]
+            #Efectividad
+            df_1_ranking['rank'][i]=round(len(filtro2)/len(filtro1),4)*100
+            df_1_ranking['simbolo'][i]=simbolos[i]
+        else:
+            df_1_ranking['rank'][i]="nan"
+        pass
+    #ordenar de mayor a menor
+    df_1_ranking =df_1_ranking.sort_values(by=['rank'],ascending=[False])
+    #elimnando los valores vacíos del DataFrame creado inicialmente
+    df_1_ranking =df_1_ranking.dropna()
+    #Eliminar indices innecesarios
+    f = df_1_ranking.rename(index={0:"",1:"",2:"",3:"",4:"",6:"",
+                                               7:"",8:"",9:"",10:"",11:"",
+                                               12:"",13:"",14:"",15:"",16:"",
+                                               17:"",18:"",19:"",20:"",21:""}, inplace=True)
+    
+    return df_1_ranking
+
 
