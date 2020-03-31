@@ -244,6 +244,8 @@ def f_estadistica_ba2(param_data):
     #elimnando los valores vacíos del DataFrame creado inicialmente
     df_1_ranking =df_1_ranking.dropna()
     #Eliminar indices innecesarios
+    
+    
     f = df_1_ranking.rename(index={0:"",1:"",2:"",3:"",4:"",6:"",
                                                7:"",8:"",9:"",10:"",11:"",
                                                12:"",13:"",14:"",15:"",16:"",
