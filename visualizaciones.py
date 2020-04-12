@@ -5,14 +5,12 @@
 # -- repositorio:https://github.com/FranciscoRodRam/LAB_2_FRRR
 # -- ------------------------------------------------------------------------------------ -- #
 
-
 import funciones as fn
 import plotly.express as px
 import plotly.graph_objects as go
-
+import os
 #Archivo a analizar
 data = 'archivo_tradeview1.xlsx'
-
 
 
 def pie(param_data):
@@ -26,4 +24,11 @@ def pie(param_data):
     values = df['rank']
     pastel = go.Figure(data=[go.Pie(labels=labels, values=values, title='Ranking de Instrumentos', pull=[0.05, 0.05, 0, 0,0,0,0])])
     pastel.show()
+
+
+    if not os.path.exists("images"):
+        os.mkdir("images")
+    
+    pastel.write_image("images/fig1.jpeg") #Guardar imagen 
+    
     return pastel

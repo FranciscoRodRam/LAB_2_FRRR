@@ -7,11 +7,9 @@
 
 import funciones as fn
 import visualizaciones as vn
-import pandas as pd
 
 #Archivo a analizar
 data = 'archivo_tradeview1.xlsx'
-
 
 
 #funciones que se ulizan para realizar calculos
@@ -46,5 +44,5 @@ else:
     df_profit_diario = fn.profit2diario(param_data=df_data)
     profit_sinsabado=fn.sinsabado2(param_data=df_data)
     f_estadistica_mad = fn.f_estadistica2_mad(param_data=df_profit_diario)
-  
+
 grafica_pastel = vn.pie(param_data=data)
