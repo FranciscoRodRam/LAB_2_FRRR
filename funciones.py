@@ -170,11 +170,9 @@ def f_leer_archivo(param_archivo):
 
     """
     Funcion para leer archivo en formato xlsx.
-    :param param_archivo: Cadena de texto con el nombre del archivo
-    :return: dataframe de datos importados de archivo excel
-    Debugging
-    ---------
-    param_archivo = 'archivo_tradeview_1.xlsx'
+   
+ ---------
+    param_archivo = 'archivo_tradeview1.xlsx'
     """
     # Leer archivo de datos y guardarlo en Data Frame
     df_data = pd.read_excel('archivos/' + param_archivo, sheet_name='Sheet1')
@@ -201,7 +199,7 @@ def f_pip_size(param_ins):
     pips_inst : 
     Debugging
     ---------
-    param_ins =  'archivo_tradeview_1.xlsx'
+    param_ins =  'archivo_tradeview1.xlsx'
     """""    
     #jpy 100
     #usd 10,000
@@ -222,7 +220,7 @@ def f_columnas_tiempos(param_data):
     """
     Parameters
     ----------
-    param_data : 'archivo_tradeview_1'
+    param_data : 'archivo_tradeview1'
     Returns
     -------
     datos
@@ -250,7 +248,7 @@ def f_columnas_pips(param_data):
     """
     Parameters
     ---------
-    param_data: 'archivo_tradeview_1'
+    param_data: 'archivo_tradeview1'
     Returns
     ------
     datos
@@ -291,7 +289,7 @@ def f_estadisticas_ba(param_data):
     """
     Parameters
     ----------
-    param_data : 'archivo_tradeview_1.xlsx'
+    param_data : 'archivo_tradeview1.xlsx'
     Returns
     -------
     datos
@@ -420,11 +418,10 @@ def f_capital_acum(param_data):
     Debugging
     ---------
     """
- 
     param_data['capital_acm'] = np.zeros(len(param_data['type']))
     param_data['capital_acm'][0] = 5000 + param_data['profit'][0]
-            
-    for i in range(1,len(param_data['pips'])):
+    
+    for i in range(1,len(param_data['type'])):
          param_data['capital_acm'][i] = param_data['capital_acm'][i-1] + param_data['profit'][i]
 
     return param_data  
@@ -606,7 +603,7 @@ def sinsabado2(param_data):
     Debugging
     ---------
     """
-    data = profitdiario(param_data)
+    data = profit2diario(param_data)
     
         
     f_profit_diario = data[data.timestamp.dt.weekday != 5]    
@@ -639,7 +636,21 @@ def inforatio(param_data):
 # -- ------------------------------------------------------------------------------------ -- #
 # -- Función para descargar precios masivos y calcular media del ratio 
 
-
+def inforatio2(param_data):
+    OA_Gn = "D"                        # Granularidad de velas
+    OA_In = "SPX500_USD"
+    fi = "2019-08-27 00:00:00"      #Cambiar la fecha según el archivo a analizar
+    ff   =  "2019-09-29 00:00:00"    #Cambuar la fecha según corresponda 
+    fini = pd.to_datetime(fi).tz_localize('GMT')  # Fecha inicial
+    ffin = pd.to_datetime(ff).tz_localize('GMT')  # Fecha
+    df_pe = f_precios_masivos(p0_fini=fini, p1_ffin=ffin, p2_gran=OA_Gn,p3_inst=OA_In, p4_oatk=OA_Ak, p5_ginc=4900)    
+    rend=[]
+    
+    for i in range(len(df_pe)-1):
+        rlog=np.log((float(df_pe['Close'][i+1])/(float(df_pe['Close'][i]))))
+        rend.append(rlog)  
+   
+    return rend
 
 # -- ------------------------------------------------------ FUNCION: Métricas de desempeño -- #
 # -- ------------------------------------------------------------------------------------ -- #
@@ -769,11 +780,13 @@ def f_estadistica2_mad(param_data):
     f_estadistica2_mad['valor'][0]=sharpe
     
     #Sortino 
-    #Posiciones Compra
-    
+    #Posiciones Compra 
+
+    f_estadistica2_mad['valor'][1]="Pendiente"
     
     #Posiciones Venta 
-    #  
+    f_estadistica2_mad['valor'][2]="Pendiente"
+   
     
     
     #drawdown_capi
@@ -794,8 +807,84 @@ def f_estadistica2_mad(param_data):
     drawup = str(drawup)
     f_estadistica2_mad['valor'][4]= fechaf + " | " + fechaff + " | " + "$ " + drawup #colocando el valor correspondiente. 
     
+    #rendimiento esperado        
+    rendslogratio=np.mean(inforatio2(param_data))
 
+    descuento = rendimientos -rendslogratio
+    descuento = np.std(descuento)
+    
+    #Iformation Ratio     
+    ratio= (rendlog-rendslogratio)/descuento
+    f_estadistica2_mad['valor'][5]=str(ratio)
+        
 
     
     return f_estadistica2_mad
+
+# -- ------------------------------------------------------ FUNCION: Sesgo -- #
+# -- ------------------------------------------------------------------------------------ -- #
+# --  Añade una columa con el Sesgo de Disposition effect. 
+
+def sesgo(param_data):
+    """
+    Parameters
+    ----------
+    param_data : 'df_profit_diario'
+    Returns
+    -------
+    datos
+    Debugging
+    ---------
+    """
+    param_data['sesgo'] = np.zeros(len(param_data['type']))
+    for i in range (len(param_data)):
+        a = str(param_data['opentime'][i])
+        b= str(param_data['closetime'][i])
+        #extraer hora de open 
+        horaopen = (a[11:13]) if len(a) > 10 else horaopen
+        #extraer hora de open 
+        horaclose = (b[11:13]) if len(b) > 10 else horaclose
     
+        if param_data['profit'][i]<0 and horaopen != horaclose:
+            param_data['sesgo'][i] = 'sesgo'
+        elif param_data['profit'][i]>0 and horaopen == horaclose:
+             param_data['sesgo'][i] = 'sesgo'
+        else: 
+            param_data['sesgo'][i] = 'sin sesgo'    
+        
+
+    return param_data
+
+# -- ------------------------------------------------------ FUNCION: Sesgo -- #
+# -- ------------------------------------------------------------------------------------ -- #
+# --  Se contabilizan los escenarios. 
+
+
+def f_be_de(param_data): 
+    """
+    Parameters
+    ----------
+    param_data : 'archivo_tradeview1'
+    Returns
+    -------
+    datos
+    Debugging
+    ---------
+    """
+    #Elementos del DataFrame
+    diccionario= {'Sesgo':
+         ['Averso a las pérdidas','Agresivo a las ganancias'],
+         'Número de veces que sucedio':np.zeros(2),
+         'Descripcion':
+         ['Mantener la pérdida','Cobrar ganancias']
+         }
+    #DataFrame vacío
+    f_be_de = pd.DataFrame(diccionario)
+    #Se filtran los valores en los que hubo ganancia y presencia de sesgo
+    filtro0 = param_data[(param_data['profit']>0) & (param_data['sesgo'] =='sesgo')]
+    #Se filtran los valores en los que hubo perdida y prencia de sesgo
+    filtro1 = param_data[(param_data['profit']<0) & (param_data['sesgo'] =='sesgo')]
+    f_be_de['Número de veces que sucedio'][1]=filtro0['sesgo'].count()
+    f_be_de['Número de veces que sucedio'][0]=filtro1['sesgo'].count()
+    
+    return f_be_de
